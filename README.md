@@ -1,10 +1,10 @@
-# artiscribe: front-end edition  :telescope:
+# artiscribe-frontend   :telescope:
 
-## Useful Commands
+## NPM Testing Commands
 
 ```npm start```  
-Run front-end locally for testing.
+Run the interface locally.
 
 ```npm run build```  
-Generate a production build of the front-end.  
+Generate a production build of the frontend.  
 By default, this is created in the */build* directory.
