@@ -50,7 +50,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <Router>
+      <Router basename='/home'>
         <div id="page">
         <Switch>
           <Route path="/login">

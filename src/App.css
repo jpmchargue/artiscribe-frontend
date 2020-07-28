@@ -21,3 +21,8 @@
   border-radius: 10px;
   color: rgb(0, 0, 0);
 }
+
+#toolbar {
+  background: #ffe888;
+  border-radius: 0px 0px 0px 8px;
+}
