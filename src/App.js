@@ -3,10 +3,12 @@ import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  useHistory
+  Route
 } from "react-router-dom";
-import ReCAPTCHA from "react-google-recaptcha";
+import {
+  loadReCaptcha,
+  ReCaptcha
+} from 'react-recaptcha-v3';
 
 import logo from './logo.png';
 
@@ -50,7 +52,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <Router basename='/home'>
+      <Router>
         <div id="page">
         <Switch>
           <Route path="/login">
@@ -60,15 +62,13 @@ class App extends React.Component {
             <Signup />
           </Route>
           <Route path="/subs">
-            <Header />
             <Subscriptions />
             {this.renderOverlay()}
           </Route>
           <Route path="/">
-            <Header />
             <Discover />
-            <ToggleButton onClick={() => this.loginOverlay()} />
-            {this.renderOverlay()}
+            //<ToggleButton onClick={() => this.loginOverlay()} />
+            //{this.renderOverlay()}
           </Route>
         </Switch>
         </div>
@@ -78,12 +78,86 @@ class App extends React.Component {
 }
 
 
-function Header() {
-  return (
-    <div class="header">
-      <img src={logo} alt="ARTISCRIBE" />
-    </div>
-  );
+class Hotbar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loggedIn: false,
+      receivedData: false,
+      username: '',
+      icon: '',
+      color: '',
+      birthday: '',
+      balance: 0,
+      lastHeartTime: 0,
+      numMessages: 0,
+      numNotifs: 0,
+    }
+  }
+  componentDidMount() {
+    let data = {
+      function: 'hotbar',
+    }
+    fetch("https://api.artiscribe.com", {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(hotbar => {
+      console.log(JSON.stringify('hotbar'));
+      if (hotbar === null) {
+        this.setState({
+          loggedIn: false,
+          receivedData: true
+        });
+        this.props.callback(this.state);
+      } else {
+        this.setState({
+          username: hotbar.username,
+          icon: hotbar.icon,
+          color: hotbar.color,
+          birthday: hotbar.birthday,
+          balance: hotbar.balance,
+          lastHeartTime: hotbar.lastHeartTime,
+          numMessages: hotbar.numMessages,
+          numNotifs: hotbar.numNotifs,
+          loggedIn: true,
+          receivedData: true
+        });
+        this.props.callback(this.state);
+      }
+    });
+  }
+
+  renderLoginInfo() {
+    if (this.state.receivedData) {
+      if (this.state.loggedIn) {
+        return (
+          <div>
+            {JSON.stringify(this.state)}
+          </div>
+        );
+      } else {
+        return (
+          <div>You are not logged in!</div>
+        );
+      }
+    } else {
+      return (
+        <div>Loading...</div>
+      );
+    }
+  }
+
+  render() {
+    return (
+      <div class="header">
+        <img src={logo} alt="ARTISCRIBE" />
+        {this.renderLoginInfo()}
+      </div>
+    );
+  }
 }
 
 
@@ -96,12 +170,27 @@ function ToggleButton(props) {
 }
 
 
-function Discover() {
-  return (
-    <div id="main">
-      <h1>Welcome to the discover page.</h1>
-    </div>
-  );
+class Discover extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: '',
+      receivedUsername: false,
+    }
+  }
+
+  receiveHotbarState(state) {
+    console.log("Page received hotbar state: " + JSON.stringify(state));
+  }
+
+  render() {
+    return (
+      <div id="main">
+        <Hotbar callback={() => this.receiveHotbarState()} />
+        <h1>Welcome to the discover page.</h1>
+      </div>
+    );
+  }
 }
 
 
@@ -158,11 +247,9 @@ class Login extends React.Component {
     })
     .then(response => response.text())
     .then(text => {
-        alert(text);
         if (text === '1') {
-          window.location.href = "https://artiscribe.com";
+          //window.location.href = "https://artiscribe.com";
         } else {
-          alert('Login failed.');
           this.setState({badLogin: true});
         }
     });
@@ -211,13 +298,18 @@ class Signup extends React.Component {
       emailIsUnique: true,
       usernameIsUnique: true,
       passwordsMatch: true,
-      recaptchaRef: React.createRef(),
+      token: '',
     };
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handleUsernameChange = this.handleUsernameChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
     this.handleConfirmationChange = this.handleConfirmationChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.verifyCallback = this.verifyCallback.bind(this);
+  }
+
+  componentDidMount() {
+    loadReCaptcha("6LeE77cZAAAAAATa9SWXiWOV5gWZcqkfuHnsCSqr", () => {console.log("Loaded reCaptcha!");});
   }
 
   handleEmailChange(event) {
@@ -274,7 +366,46 @@ class Signup extends React.Component {
   }
   handleSubmit(event) {
     event.preventDefault();
-    this.state.recaptchaRef.current.execute();
+    if (this.state.emailIsUnique && this.state.usernameIsUnique && this.state.passwordsMatch) {
+      if ((this.state.email.length === 0) || (this.state.username.length === 0) || (this.state.password.length === 0) || (this.state.confirmation.length === 0)) {
+        this.setState({errorId: 1});
+      } else {
+        //grecaptcha.execute();
+        let data = {
+          function: 'createAccount',
+          email: this.state.email,
+          username: this.state.username,
+          password: this.state.password,
+        }
+        data['g-recaptcha-response'] = this.state.token;
+        console.log("submitting: " + JSON.stringify(data));
+        fetch("https://api.artiscribe.com", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        })
+        .then(response => response.text())
+        .then(text => {
+            if (text === '1') {
+              window.location.href = "https://artiscribe.com";
+            } else if (text === '[BOT]'){
+              this.setState({errorId: 2});
+            } else {
+              this.setState({errorId: 3});
+            }
+        });
+      }
+    }
+  }
+
+    //this.state.recaptchaRef.current.execute();
+
+  verifyCallback(token) { this.setState({token: token}); }
+
+  updateToken() { this.recaptcha.execute(); }
+
+  /*
+  handleCaptcha(token) {
     if (this.state.emailIsUnique && this.state.usernameIsUnique && this.state.passwordsMatch) {
       if ((this.state.email.length === 0) || (this.state.username.length === 0) || (this.state.password.length === 0) || (this.state.confirmation.length === 0)) {
         //alert("Missing required field!");
@@ -286,7 +417,7 @@ class Signup extends React.Component {
           username: this.state.username,
           password: this.state.password,
         }
-        data['g-recaptcha-response'] = this.state.recaptchaRef.current.getValue();
+        data['g-recaptcha-response'] = token;
         fetch("https://api.artiscribe.com", {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -306,6 +437,7 @@ class Signup extends React.Component {
       }
     }
   }
+  */
 
   //handleCaptcha(token) {
   //  alert("Submitting...");
@@ -343,46 +475,49 @@ class Signup extends React.Component {
   renderSubmitButton() {
     if ((this.state.email.length > 0) && (this.state.username.length > 0) && (this.state.password.length > 0) && (this.state.confirmation.length > 0)) {
       if (this.state.emailIsUnique && this.state.usernameIsUnique && this.state.passwordsMatch) {
-        return (<button type="submit">Create account</button>);
+        return (<input type="submit" value="Create Account" />);
       }
     }
   }
 
   render() {
     return (
-      <div className="formbox">
-        <h1>Create an account</h1>
-        {this.renderError()}
-        <form onSubmit="handleSubmit">
-          <label>
-            Email:
-            <input type="text" value={this.state.email} onChange={this.handleEmailChange} />
-          </label>
-          {this.renderWarning(this.state.emailIsUnique, "An account with this email already exists.")}
-          <br />
-          <label>
-            Username:
-            <input type="text" value={this.state.username} onChange={this.handleUsernameChange} />
-          </label>
-          {this.renderWarning(this.state.usernameIsUnique, "An account with this username already exists.")}
-          <br />
-          <label>
-            Password:
-            <input type="text" value={this.state.password} onChange={this.handlePasswordChange} />
-          </label>
-          <br />
-          <label>
-            Confirm your password:
-            <input type="text" value={this.state.confirmation} onChange={this.handleConfirmationChange} />
-          </label>
-          {this.renderWarning(this.state.passwordsMatch, "The two passwords provided do not match.")}
-          {this.renderSubmitButton()}
-        </form>
-        <ReCAPTCHA
-          ref={this.state.recaptchaRef}
-          size="invisible"
-          sitekey="6Lek9qUZAAAAAGH1XpF5laPEgXYOXVElIZTbigAk"
+      <div>
+        <ReCaptcha
+          ref={ref => this.recaptcha = ref}
+          sitekey="6LeE77cZAAAAAATa9SWXiWOV5gWZcqkfuHnsCSqr"
+          action='signup'
+          verifyCallback={this.verifyCallback}
         />
+        <div className="formbox">
+          <h1>Create an account</h1>
+          {this.renderError()}
+          <form onSubmit={this.handleSubmit}>
+            <label>
+              Email:
+              <input type="text" id="txtEmail" value={this.state.email} onChange={this.handleEmailChange} />
+            </label>
+            {this.renderWarning(this.state.emailIsUnique, "An account with this email already exists.")}
+            <br />
+            <label>
+              Username:
+              <input type="text" id="txtUsername" value={this.state.username} onChange={this.handleUsernameChange} />
+            </label>
+            {this.renderWarning(this.state.usernameIsUnique, "An account with this username already exists.")}
+            <br />
+            <label>
+              Password:
+              <input type="text" id="txtPassword" value={this.state.password} onChange={this.handlePasswordChange} />
+            </label>
+            <br />
+            <label>
+              Confirm your password:
+              <input type="text" id="txtConfirmation" value={this.state.confirmation} onChange={this.handleConfirmationChange} />
+            </label>
+            {this.renderWarning(this.state.passwordsMatch, "The two passwords provided do not match.")}
+            {this.renderSubmitButton()}
+          </form>
+        </div>
       </div>
     );
   }
