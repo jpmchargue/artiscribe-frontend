@@ -12,6 +12,9 @@ import {
 
 import logo from './logo.png';
 
+
+var API_URL = 'https://artiscribe.com/api/php.php';
+
 function cra(app, text) {
     if (text === '[O]') {
         // browser is outdated
@@ -98,14 +101,14 @@ class Hotbar extends React.Component {
     let data = {
       function: 'hotbar',
     }
-    fetch("https://api.artiscribe.com", {
+    fetch(API_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(data),
     })
     .then(response => response.json())
     .then(hotbar => {
-      console.log(JSON.stringify('hotbar'));
+      console.log(JSON.stringify(hotbar));
       if (hotbar === null) {
         this.setState({
           loggedIn: false,
@@ -114,7 +117,7 @@ class Hotbar extends React.Component {
         this.props.callback(this.state);
       } else {
         this.setState({
-          username: hotbar.username,
+          username: hotbar.name,
           icon: hotbar.icon,
           color: hotbar.color,
           birthday: hotbar.birthday,
@@ -128,6 +131,9 @@ class Hotbar extends React.Component {
         this.props.callback(this.state);
       }
     });
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   renderLoginInfo() {
@@ -150,11 +156,140 @@ class Hotbar extends React.Component {
     }
   }
 
+  renderSearchBar() {
+    if (this.state.receivedData) {
+      if (this.state.loggedIn) {
+        return (
+          <div id="hb_thinSearchBarContainer">
+            <input type="text" id="searchbar" placeholder="Search Artiscribe"/>
+          </div>
+        );
+      } else {
+        return (
+          <div id="hb_wideSearchBarContainer">
+            <input type="text" id="searchbar" placeholder="Search Artiscribe"/>
+          </div>
+        );
+      }
+    }
+  }
+
+  renderNavigation() {
+    if (this.state.receivedData) {
+      if (this.state.loggedIn) {
+        let myPageLink = "https://artiscribe.com/u/" + this.state.username;
+        return (
+          <div id="hb_navlinks">
+            <a href="https://artiscribe.com/">Discover</a>
+            <a href="https://artiscribe.com/subs">Subs</a>
+            <a href={myPageLink}>My Page</a>
+            <a href="https://artiscribe.com/chats">Direct Messages</a>
+            <a href="https://artiscribe.com/notifs">Notifications</a>
+          </div>
+        );
+      }
+    }
+  }
+
+  zeroExt(num, numDigits) {
+    var string = num.toString();
+    while (string.length < numDigits) {
+      string = '0' + string;
+    }
+    return string;
+  }
+
+  renderLastHeartTime() {
+    if (this.state.receivedData) {
+      if (this.loggedIn && (this.state.lastHeartTime != 0)) {
+        let currentTime = Math.floor(Date.now() / 1000);
+        let remainingTime = 86400 - (currentTime - this.state.lastHeartTime);
+        if (remainingTime <= 0) {
+          var message = "ready";
+        } else {
+          let hours = Math.floor(remainingTime / 3600);
+          let minutes = Math.floor((remainingTime % 3600) / 60);
+          let seconds = remainingTime % 60;
+          var message = hours.toString() + ':' + this.zeroExt(minutes, 2) + ':' + this.zeroExt(seconds, 2);
+        }
+        return (
+          <div id="hb_hearttime">
+            {message}
+          </div>
+        );
+      }
+    }
+  }
+
+  renderCredits() {
+    if (this.state.receivedData) {
+      if (this.state.loggedIn) {
+        return (
+          <div id="hb_balance">
+            Credits: {this.state.balance}
+          </div>
+        );
+      }
+    }
+  }
+
+  renderUserWidget() {
+    if (this.state.receivedData) {
+      if (this.state.loggedIn) {
+        return (
+          <div id="hb_userwidget">
+            You are logged in as <b>{this.state.username}</b>.
+          </div>
+        );
+      }
+    }
+  }
+
+  navigateToLogin() {
+    window.location.href = "https://artiscribe.com/login";
+  }
+
+  renderLoginButton() {
+    if (this.state.receivedData) {
+      if (!this.state.loggedIn) {
+        return (
+          <div id="hb_loginButton" onClick={() => this.navigateToLogin()}>
+            Log in
+          </div>
+        );
+      }
+    }
+  }
+
+  navigateToSignup() {
+    window.location.href = "https://artiscribe.com/signup";
+  }
+
+  renderSignupButton() {
+    if (this.state.receivedData) {
+      if (!this.state.loggedIn) {
+        return (
+          <div id="hb_signupButton" onClick={() => this.navigateToSignup()}>
+            Create an Artiscribe Account
+          </div>
+        );
+      }
+    }
+  }
+
   render() {
     return (
-      <div class="header">
-        <img src={logo} alt="ARTISCRIBE" />
-        {this.renderLoginInfo()}
+      <div id="heading">
+        <img src={logo} alt="ARTISCRIBE" id="logo"/>
+        <div id="hotbar">
+          {this.renderSearchBar()}
+          {this.renderNavigation()}
+          {this.renderLastHeartTime()}
+          {this.renderCredits()}
+          {this.renderUserWidget()}
+          {this.renderLoginButton()}
+          {this.renderSignupButton()}
+        </div>
       </div>
     );
   }
@@ -186,7 +321,7 @@ class Discover extends React.Component {
   render() {
     return (
       <div id="main">
-        <Hotbar callback={() => this.receiveHotbarState()} />
+        <Hotbar callback={(state) => this.receiveHotbarState(state)} />
         <h1>Welcome to the discover page.</h1>
       </div>
     );
@@ -240,7 +375,7 @@ class Login extends React.Component {
       username: this.state.username,
       password: this.state.password,
     };
-    fetch("https://api.artiscribe.com", {
+    fetch(API_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(data),
@@ -248,7 +383,7 @@ class Login extends React.Component {
     .then(response => response.text())
     .then(text => {
         if (text === '1') {
-          //window.location.href = "https://artiscribe.com";
+          window.location.href = "https://artiscribe.com";
         } else {
           this.setState({badLogin: true});
         }
@@ -318,7 +453,7 @@ class Signup extends React.Component {
       function: 'isEmailUnique',
       email: event.target.value,
     }
-    fetch("https://api.artiscribe.com", {
+    fetch(API_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data),
@@ -338,7 +473,7 @@ class Signup extends React.Component {
       function: 'isUsernameUnique',
       username: event.target.value,
     }
-    fetch("https://api.artiscribe.com", {
+    fetch(API_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data),
@@ -370,7 +505,6 @@ class Signup extends React.Component {
       if ((this.state.email.length === 0) || (this.state.username.length === 0) || (this.state.password.length === 0) || (this.state.confirmation.length === 0)) {
         this.setState({errorId: 1});
       } else {
-        //grecaptcha.execute();
         let data = {
           function: 'createAccount',
           email: this.state.email,
@@ -379,7 +513,7 @@ class Signup extends React.Component {
         }
         data['g-recaptcha-response'] = this.state.token;
         console.log("submitting: " + JSON.stringify(data));
-        fetch("https://api.artiscribe.com", {
+        fetch(API_URL, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
@@ -418,7 +552,7 @@ class Signup extends React.Component {
           password: this.state.password,
         }
         data['g-recaptcha-response'] = token;
-        fetch("https://api.artiscribe.com", {
+        fetch(API_URL, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
