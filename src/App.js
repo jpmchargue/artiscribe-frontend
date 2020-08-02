@@ -10,6 +10,9 @@ import {
   ReCaptcha
 } from 'react-recaptcha-v3';
 
+import credit from './credit.png';
+import heart from './heart.png';
+import heart_dim from './heart_dim.png';
 import logo from './logo.png';
 
 
@@ -95,9 +98,11 @@ class Hotbar extends React.Component {
       lastHeartTime: 0,
       numMessages: 0,
       numNotifs: 0,
+      time: Math.floor(Date.now() / 1000),
     }
   }
   componentDidMount() {
+    setInterval(() => this.setState({time: Math.floor(Date.now() / 1000)}), 1000)
     let data = {
       function: 'hotbar',
     }
@@ -110,8 +115,22 @@ class Hotbar extends React.Component {
     .then(hotbar => {
       console.log(JSON.stringify(hotbar));
       if (hotbar === null) {
+        /*
         this.setState({
           loggedIn: false,
+          receivedData: true
+        });
+        */
+        this.setState({
+          username: 'tester',
+          icon: 'placeholder.png',
+          color: '00ff00',
+          birthday: 1596249536,
+          balance: 21,
+          lastHeartTime: 1596037468,
+          numMessages: 3,
+          numNotifs: 7,
+          loggedIn: true,
           receivedData: true
         });
         this.props.callback(this.state);
@@ -180,11 +199,11 @@ class Hotbar extends React.Component {
         let myPageLink = "https://artiscribe.com/u/" + this.state.username;
         return (
           <div id="hb_navlinks">
-            <a href="https://artiscribe.com/">Discover</a>
-            <a href="https://artiscribe.com/subs">Subs</a>
-            <a href={myPageLink}>My Page</a>
-            <a href="https://artiscribe.com/chats">Direct Messages</a>
-            <a href="https://artiscribe.com/notifs">Notifications</a>
+            <a className="navlink" href="https://artiscribe.com/">Discover</a>
+            <a className="navlink" href="https://artiscribe.com/subs">Subs</a>
+            <a className="navlink" href={myPageLink}>My Page</a>
+            <a className="navlink" href="https://artiscribe.com/chats">Direct Messages</a>
+            <a className="navlink" href="https://artiscribe.com/notifs">Notifications</a>
           </div>
         );
       }
@@ -201,22 +220,29 @@ class Hotbar extends React.Component {
 
   renderLastHeartTime() {
     if (this.state.receivedData) {
-      if (this.loggedIn && (this.state.lastHeartTime != 0)) {
-        let currentTime = Math.floor(Date.now() / 1000);
+      if (this.state.loggedIn) {
+        let currentTime = this.state.time;
         let remainingTime = 86400 - (currentTime - this.state.lastHeartTime);
         if (remainingTime <= 0) {
-          var message = "ready";
+          var message = "Ready";
+          return (
+            <div id="hb_hearttime">
+              <img src={heart} alt="Next heart ready in:" id="heart_icon"/>
+              <div id="heart_text">{message}</div>
+            </div>
+          );
         } else {
           let hours = Math.floor(remainingTime / 3600);
           let minutes = Math.floor((remainingTime % 3600) / 60);
           let seconds = remainingTime % 60;
           var message = hours.toString() + ':' + this.zeroExt(minutes, 2) + ':' + this.zeroExt(seconds, 2);
+          return (
+            <div id="hb_hearttime">
+              <img src={heart_dim} alt="Next heart ready in:" id="heart_icon"/>
+              <div id="heart_text">{message}</div>
+            </div>
+          );
         }
-        return (
-          <div id="hb_hearttime">
-            {message}
-          </div>
-        );
       }
     }
   }
@@ -226,7 +252,8 @@ class Hotbar extends React.Component {
       if (this.state.loggedIn) {
         return (
           <div id="hb_balance">
-            Credits: {this.state.balance}
+            <img src={credit} alt="Credits:" id="credits_icon"/>
+            <div id="credits_text">{this.state.balance}</div>
           </div>
         );
       }
@@ -236,42 +263,40 @@ class Hotbar extends React.Component {
   renderUserWidget() {
     if (this.state.receivedData) {
       if (this.state.loggedIn) {
+        let icon_location = "https://artiscribe.com/usercontent/" + this.state.icon;
         return (
           <div id="hb_userwidget">
-            You are logged in as <b>{this.state.username}</b>.
+            <img src={icon_location} id="user_icon"/>
+            <div id="hb_username">{this.state.username}</div>
           </div>
         );
       }
     }
-  }
-
-  navigateToLogin() {
-    window.location.href = "https://artiscribe.com/login";
   }
 
   renderLoginButton() {
     if (this.state.receivedData) {
       if (!this.state.loggedIn) {
         return (
-          <div id="hb_loginButton" onClick={() => this.navigateToLogin()}>
-            Log in
-          </div>
+          <a href="https://artiscribe.com/login">
+            <div id="hb_loginButton">
+              Log in
+            </div>
+          </a>
         );
       }
     }
-  }
-
-  navigateToSignup() {
-    window.location.href = "https://artiscribe.com/signup";
   }
 
   renderSignupButton() {
     if (this.state.receivedData) {
       if (!this.state.loggedIn) {
         return (
-          <div id="hb_signupButton" onClick={() => this.navigateToSignup()}>
-            Create an Artiscribe Account
-          </div>
+          <a href="https://artiscribe.com/signup">
+            <div id="hb_signupButton">
+              Create an Artiscribe Account
+            </div>
+          </a>
         );
       }
     }
@@ -280,7 +305,9 @@ class Hotbar extends React.Component {
   render() {
     return (
       <div id="heading">
-        <img src={logo} alt="ARTISCRIBE" id="logo"/>
+        <a href="https://artiscribe.com" title="Artiscribe Home">
+          <img src={logo} alt="ARTISCRIBE" id="logo"/>
+        </a>
         <div id="hotbar">
           {this.renderSearchBar()}
           {this.renderNavigation()}
