@@ -3,7 +3,8 @@ import './App.css';
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
+  useLocation,
 } from "react-router-dom";
 import {
   loadReCaptcha,
@@ -14,9 +15,11 @@ import credit from './credit.png';
 import heart from './heart.png';
 import heart_dim from './heart_dim.png';
 import logo from './logo.png';
+import search_icon from './search_icon.png';
 
 
 var API_URL = 'https://artiscribe.com/api/php.php';
+var ERROR_URL = 'https://artiscribe.com/error';
 
 function cra(app, text) {
     if (text === '[O]') {
@@ -59,6 +62,7 @@ class App extends React.Component {
   render() {
     return (
       <Router>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet" />
         <div id="page">
         <Switch>
           <Route path="/login">
@@ -69,18 +73,38 @@ class App extends React.Component {
           </Route>
           <Route path="/subs">
             <Subscriptions />
-            {this.renderOverlay()}
+          </Route>
+          <Route path="/chats">
+            <Chats />
+          </Route>
+          <Route path="/notifs">
+            <Notifications />
+          </Route>
+          <Route path="/u/*">
+            <Userpage />
+          </Route>
+          <Route path="/error">
+            <ErrorPage />
           </Route>
           <Route path="/">
-            <Discover />
-            //<ToggleButton onClick={() => this.loginOverlay()} />
-            //{this.renderOverlay()}
+            <Explore />
           </Route>
         </Switch>
         </div>
       </Router>
     );
   }
+}
+
+//<ToggleButton onClick={() => this.loginOverlay()} />
+//{this.renderOverlay()}
+
+function Logo() {
+  return (
+    <a href="https://artiscribe.com" title="Artiscribe Home">
+      <img src={logo} alt="ARTISCRIBE" id="logo"/>
+    </a>
+  );
 }
 
 
@@ -115,24 +139,27 @@ class Hotbar extends React.Component {
     .then(hotbar => {
       console.log(JSON.stringify(hotbar));
       if (hotbar === null) {
-        /*
-        this.setState({
-          loggedIn: false,
-          receivedData: true
-        });
-        */
-        this.setState({
-          username: 'tester',
-          icon: 'placeholder.png',
-          color: '00ff00',
-          birthday: 1596249536,
-          balance: 21,
-          lastHeartTime: 1596037468,
-          numMessages: 3,
-          numNotifs: 7,
-          loggedIn: true,
-          receivedData: true
-        });
+
+        // IS_ANONYMOUS SWITCH
+        if (false) {
+          this.setState({
+            loggedIn: false,
+            receivedData: true
+          });
+        } else {
+          this.setState({
+            username: 'tester',
+            icon: 'placeholder.png',
+            color: '00ff00',
+            birthday: 1596249536,
+            balance: 21,
+            lastHeartTime: Math.floor(Date.now() / 1000) - 86385,
+            numMessages: 3,
+            numNotifs: 7,
+            loggedIn: true,
+            receivedData: true
+          });
+        }
         this.props.callback(this.state);
       } else {
         this.setState({
@@ -180,12 +207,14 @@ class Hotbar extends React.Component {
       if (this.state.loggedIn) {
         return (
           <div id="hb_thinSearchBarContainer">
+            <img src={search_icon} id="search_icon"/>
             <input type="text" id="searchbar" placeholder="Search Artiscribe"/>
           </div>
         );
       } else {
         return (
           <div id="hb_wideSearchBarContainer">
+            <img src={search_icon} id="search_icon"/>
             <input type="text" id="searchbar" placeholder="Search Artiscribe"/>
           </div>
         );
@@ -199,11 +228,11 @@ class Hotbar extends React.Component {
         let myPageLink = "https://artiscribe.com/u/" + this.state.username;
         return (
           <div id="hb_navlinks">
-            <a className="navlink" href="https://artiscribe.com/">Discover</a>
+            <a className="navlink" href="https://artiscribe.com/">Home</a>
             <a className="navlink" href="https://artiscribe.com/subs">Subs</a>
-            <a className="navlink" href={myPageLink}>My Page</a>
-            <a className="navlink" href="https://artiscribe.com/chats">Direct Messages</a>
-            <a className="navlink" href="https://artiscribe.com/notifs">Notifications</a>
+            <a className="navlink" href={myPageLink}>Me</a>
+            <a className="navlink" href="https://artiscribe.com/chats">DMs</a>
+            <a className="navlink" href="https://artiscribe.com/notifs">Notifs</a>
           </div>
         );
       }
@@ -304,13 +333,10 @@ class Hotbar extends React.Component {
 
   render() {
     return (
-      <div id="heading">
-        <a href="https://artiscribe.com" title="Artiscribe Home">
-          <img src={logo} alt="ARTISCRIBE" id="logo"/>
-        </a>
-        <div id="hotbar">
-          {this.renderSearchBar()}
-          {this.renderNavigation()}
+      <div id="hotbar">
+        {this.renderSearchBar()}
+        {this.renderNavigation()}
+        <div id="hotbar_right">
           {this.renderLastHeartTime()}
           {this.renderCredits()}
           {this.renderUserWidget()}
@@ -332,28 +358,213 @@ function ToggleButton(props) {
 }
 
 
-class Discover extends React.Component {
+class Explore extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
-      receivedUsername: false,
+      head: 0,
+      tail: 0,
+      metric: 0,
+      starttime: 0,
+      endtime: 0,
+      receivedData: false,
     }
+  }
+
+  componentDidMount() {
+    setInterval(() => this.populateFeed(), 500)
+    
   }
 
   receiveHotbarState(state) {
     console.log("Page received hotbar state: " + JSON.stringify(state));
   }
 
+  populateFeed() {
+    var postWidth = 382;
+    var postHeight = 382;
+    var nonPostPageWidth = 298; // Width of sidebars and their borders
+    var topLoadCushion = 500;
+    var bottomLoadCushion = 500;
+
+    var postsPerRow = Math.max(Math.floor((window.innerWidth - nonPostPageWidth)/postWidth), 1);
+    var bottomLine = Math.ceil((this.state.tail - this.state.head)/postsPerRow) * postHeight;
+    if ((bottomLine - (window.scrollY + window.innerHeight)) < bottomLoadCushion) {
+      // Load the next row, unload the first row
+      let swing = postsPerRow;
+      let data = {
+        function: 'getPosts',
+
+      }
+    }
+    if ((window.scrollY < topLoadCushion) && (this.state.head > 0)) {
+      // Load the previous row, unload the last row
+      let swing = postsPerRow;
+    }
+  }
+
   render() {
     return (
-      <div id="main">
-        <Hotbar callback={(state) => this.receiveHotbarState(state)} />
-        <h1>Welcome to the discover page.</h1>
+      <div className="main">
+        <div id="sidebar">
+          <Logo />
+          <div className="sidebar_contents">
+            <div className="heading">Explore</div>
+          </div>
+        </div>
+        <div id="central">
+          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+          <div className="central_contents">
+            <div className="post_container">
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+              <div className="post"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 }
+
+
+class Subscriptions extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  receiveHotbarState(state) {console.log("called back");}
+  render () {
+    return (
+      <div className="main">
+        <div id="sidebar">
+          <Logo />
+          <div className="sidebar_contents">
+            <div className="heading">Subscriptions</div>
+          </div>
+        </div>
+        <div id="central">
+          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+          <div className="central_contents">
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+
+class Chats extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  receiveHotbarState(state) {console.log("called back");}
+  render () {
+    return (
+      <div className="main">
+        <div id="sidebar">
+          <Logo />
+          <div className="sidebar_contents">
+            <div className="heading">Chats</div>
+          </div>
+        </div>
+        <div id="central">
+          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+          <div className="central_contents">
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+
+class Notifications extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  receiveHotbarState(state) {console.log("called back");}
+  render () {
+    return (
+      <div className="main">
+        <div id="sidebar">
+          <Logo />
+          <div className="sidebar_contents">
+            <div className="heading">Notifications</div>
+          </div>
+        </div>
+        <div id="central">
+          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+          <div className="central_contents">
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+
+class Userpage extends React.Component {
+  constructor(props) {
+    super(props);
+    let urlparts = window.location.href.split('/');
+    if ((urlparts.length === 5) && (urlparts[4] !== '')) {
+      this.state = {
+        username: urlparts[4],
+      }
+    } else {
+      window.location.href = ERROR_URL;
+    }
+
+  }
+  receiveHotbarState(state) {console.log("called back");}
+  render () {
+
+    return (
+      <div className="main">
+        <div id="sidebar">
+          <Logo />
+          <div className="sidebar_contents">
+            <div className="heading">{this.state.username}</div>
+          </div>
+        </div>
+        <div id="central">
+          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+          <div className="central_contents">
+
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+
+class ErrorPage extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return <div></div>;
+  }
+}
+
+/*
+function getUsername(props) {
+  let location = useLocation();
+  console.log(location.pathname);
+  return <div>{location.pathname}</div>
+}
+*/
 
 
 function LoginOverlay(props) {
@@ -682,11 +893,6 @@ class Signup extends React.Component {
       </div>
     );
   }
-}
-
-
-function Subscriptions() {
-  return <h1>Your Subscriptions</h1>
 }
 
 
