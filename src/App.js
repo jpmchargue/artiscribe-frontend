@@ -11,15 +11,31 @@ import {
   ReCaptcha
 } from 'react-recaptcha-v3';
 
-import credit from './credit.png';
-import heart from './heart.png';
-import heart_dim from './heart_dim.png';
+import credit from './credit.svg';
+import heart from './heart.svg';
+import heart_dim from './heart_dim.svg';
 import logo from './logo.png';
+import logo_white from './logo_white.png';
 import search_icon from './search_icon.png';
+import inkwell from './inkwell.svg';
+
+import home_icon from './home.svg';
+import home_icon_dim from './home_dim.svg';
+import map_icon from './map.svg';
+import map_icon_dim from './map_dim.svg';
+import me_icon from './me.svg';
+import me_icon_dim from './me_dim.svg';
+import dm_icon from './dm.svg';
+import dm_icon_dim from './dm_dim.svg';
+import notif_icon from './notif.svg';
+import notif_icon_dim from './notif_dim.svg';
 
 
+// GOTO CONSTURL
 var API_URL = 'https://artiscribe.com/api/php.php';
 var ERROR_URL = 'https://artiscribe.com/error';
+var IMG_URL = 'https://artiscribe.com/usercontent/';
+var POST_URL = 'https://artiscribe.com/post/';
 
 function cra(app, text) {
     if (text === '[O]') {
@@ -80,14 +96,17 @@ class App extends React.Component {
           <Route path="/notifs">
             <Notifications />
           </Route>
+          <Route path="/post/*">
+            <PostPage />
+          </Route>
           <Route path="/u/*">
-            <Userpage />
+            <UserPage />
           </Route>
           <Route path="/error">
             <ErrorPage />
           </Route>
           <Route path="/">
-            <Explore />
+            <Home />
           </Route>
         </Switch>
         </div>
@@ -99,15 +118,29 @@ class App extends React.Component {
 //<ToggleButton onClick={() => this.loginOverlay()} />
 //{this.renderOverlay()}
 
+// GOTO LOGO
 function Logo() {
   return (
-    <a href="https://artiscribe.com" title="Artiscribe Home">
-      <img src={logo} alt="ARTISCRIBE" id="logo"/>
+    <div id="logo_container">
+      <a href="https://artiscribe.com" title="Artiscribe Home" id="logo_link">
+        <img src={inkwell} id="logo" height="48"/>
+      </a>
+    </div>
+  );
+}
+
+
+function FillerLogo() {
+  return (
+    <a href="https://artiscribe.com" title="Artiscribe Home" id="logo_link">
+      <img src={inkwell} id="inkwell" height="50"/>
+      <img src={logo} alt="ARTISCRIBE" id="filler_logo"/>
     </a>
   );
 }
 
 
+// GOTO HOTBAR
 class Hotbar extends React.Component {
   constructor(props) {
     super(props);
@@ -141,7 +174,7 @@ class Hotbar extends React.Component {
       if (hotbar === null) {
 
         // IS_ANONYMOUS SWITCH
-        if (false) {
+        if (true) {
           this.setState({
             loggedIn: false,
             receivedData: true
@@ -226,15 +259,32 @@ class Hotbar extends React.Component {
     if (this.state.receivedData) {
       if (this.state.loggedIn) {
         let myPageLink = "https://artiscribe.com/u/" + this.state.username;
-        return (
-          <div id="hb_navlinks">
-            <a className="navlink" href="https://artiscribe.com/">Home</a>
-            <a className="navlink" href="https://artiscribe.com/subs">Subs</a>
-            <a className="navlink" href={myPageLink}>Me</a>
-            <a className="navlink" href="https://artiscribe.com/chats">DMs</a>
-            <a className="navlink" href="https://artiscribe.com/notifs">Notifs</a>
-          </div>
-        );
+        var lits = [home_icon, map_icon, me_icon, dm_icon, notif_icon];
+        var dims = [home_icon_dim, map_icon_dim, me_icon_dim, dm_icon_dim, notif_icon_dim];
+        var dests = [
+          "https://artiscribe.com/",
+          "https://artiscribe.com/subs",
+          myPageLink,
+          "https://artiscribe.com/chats",
+          "https://artiscribe.com/notifs"
+        ]
+        var links = [];
+        for (var i = 0; i < lits.length; i++) {
+          if (i === this.props.location) {
+            links.push(
+              <a className="navlink" href={dests[i]}>
+                <img src={lits[i]} height="30" />
+              </a>
+            );
+          } else {
+            links.push(
+              <a className="navlink" href={dests[i]}>
+                <img src={dims[i]} height="30" />
+              </a>
+            );
+          }
+        }
+        return <div id="hb_navlinks">{links}</div>;
       }
     }
   }
@@ -256,7 +306,7 @@ class Hotbar extends React.Component {
           var message = "Ready";
           return (
             <div id="hb_hearttime">
-              <img src={heart} alt="Next heart ready in:" id="heart_icon"/>
+              <img src={heart} alt="Next heart ready in:" id="heart_icon" height="30"/>
               <div id="heart_text">{message}</div>
             </div>
           );
@@ -267,7 +317,7 @@ class Hotbar extends React.Component {
           var message = hours.toString() + ':' + this.zeroExt(minutes, 2) + ':' + this.zeroExt(seconds, 2);
           return (
             <div id="hb_hearttime">
-              <img src={heart_dim} alt="Next heart ready in:" id="heart_icon"/>
+              <img src={heart_dim} alt="Next heart ready in:" id="heart_icon" height="30"/>
               <div id="heart_text">{message}</div>
             </div>
           );
@@ -281,7 +331,7 @@ class Hotbar extends React.Component {
       if (this.state.loggedIn) {
         return (
           <div id="hb_balance">
-            <img src={credit} alt="Credits:" id="credits_icon"/>
+            <img src={credit} alt="Credits:" id="credits_icon" height="30"/>
             <div id="credits_text">{this.state.balance}</div>
           </div>
         );
@@ -334,6 +384,7 @@ class Hotbar extends React.Component {
   render() {
     return (
       <div id="hotbar">
+        <Logo />
         {this.renderSearchBar()}
         {this.renderNavigation()}
         <div id="hotbar_right">
@@ -358,77 +409,263 @@ function ToggleButton(props) {
 }
 
 
-class Explore extends React.Component {
+// GOTO CONSTPOST
+var POST_WIDTH = 382;
+var POST_HEIGHT = 382;
+var NON_POST_PAGE_WIDTH = 298; // Width of sidebars and their borders
+var TOP_LOAD_CUSHION = 500;
+var TOP_UNLOAD_DISTANCE = 1000;
+var BOTTOM_LOAD_CUSHION = 500;
+var BOTTOM_UNLOAD_DISTANCE = 1000;
+
+
+function getPostsPerRow() {
+  return Math.max(Math.floor((window.innerWidth - NON_POST_PAGE_WIDTH)/POST_WIDTH), 1);
+}
+
+
+// GOTO HOME
+class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       head: 0,
       tail: 0,
+      inventory: [],
+      reachedEnd: false,
+      queriedAbove: false,
+      queriedBelow: false,
       metric: 0,
-      starttime: 0,
-      endtime: 0,
+      keystring: "",
+      startTime: 0,
+      endTime: Math.floor(Date.now() / 1000),
       receivedData: false,
     }
   }
 
   componentDidMount() {
-    setInterval(() => this.populateFeed(), 500)
-    
+    setInterval(() => this.updateFeed(), 500)
+    let numToLoad = Math.ceil((window.innerHeight + BOTTOM_LOAD_CUSHION) / POST_HEIGHT) * getPostsPerRow();
+    let data = {
+      function: 'getPosts',
+      metric: this.state.metric,
+      keystring: this.state.keystring,
+      starttime: this.state.startTime,
+      endtime: this.state.endTime,
+      index: 0,
+      number: numToLoad,
+    }
+    fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(posts => {
+      this.receivePosts(posts);
+    })
+    this.setState({
+      queriedBelow: true,
+    });
   }
 
   receiveHotbarState(state) {
     console.log("Page received hotbar state: " + JSON.stringify(state));
   }
 
-  populateFeed() {
-    var postWidth = 382;
-    var postHeight = 382;
-    var nonPostPageWidth = 298; // Width of sidebars and their borders
-    var topLoadCushion = 500;
-    var bottomLoadCushion = 500;
+  receiveHotbarSearchbarValue(value) {
+    this.setState({
+      keystring: value
+    });
+  }
 
-    var postsPerRow = Math.max(Math.floor((window.innerWidth - nonPostPageWidth)/postWidth), 1);
-    var bottomLine = Math.ceil((this.state.tail - this.state.head)/postsPerRow) * postHeight;
-    if ((bottomLine - (window.scrollY + window.innerHeight)) < bottomLoadCushion) {
-      // Load the next row, unload the first row
-      let swing = postsPerRow;
+  updateFeed() {
+    var postsPerRow = getPostsPerRow();
+    var bottomLine = Math.ceil((this.state.tail - this.state.head)/postsPerRow) * POST_HEIGHT;
+
+    if (((window.scrollY + window.innerHeight + BOTTOM_LOAD_CUSHION) > bottomLine)
+      && !(this.state.queriedBelow)
+      && !(this.state.reachedEnd)
+    ) {
+      let numToLoad = Math.ceil((window.scrollY + window.innerHeight + BOTTOM_LOAD_CUSHION - bottomLine) / POST_HEIGHT) * postsPerRow;
       let data = {
         function: 'getPosts',
-
+        metric: this.state.metric,
+        keystring: this.state.keystring,
+        starttime: this.state.startTime,
+        endtime: this.state.endTime,
+        index: this.state.tail,
+        number: numToLoad,
       }
+      fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(posts => {
+        this.receivePosts(posts);
+      })
+      this.setState({
+        queriedBelow: true,
+      });
     }
-    if ((window.scrollY < topLoadCushion) && (this.state.head > 0)) {
-      // Load the previous row, unload the last row
-      let swing = postsPerRow;
+    if ((window.scrollY < TOP_LOAD_CUSHION) && !(this.state.queriedAbove) && (this.state.head > 0)) {
+      let numToLoad = Math.min(this.head, Math.ceil((TOP_LOAD_CUSHION - window.scrollY) / POST_HEIGHT));
+      let data = {
+        function: 'getPosts',
+        metric: this.state.metric,
+        keystring: this.state.keystring,
+        starttime: this.state.startTime,
+        endtime: this.state.endTime,
+        index: this.state.head - numToLoad,
+        number: numToLoad,
+      }
+      fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(posts => {
+        this.receivePosts(posts);
+      })
+      this.setState({
+        queriedAbove: true,
+      });
     }
+  }
+
+  receivePosts(batch) {
+    let batchHead = batch[0];
+    let batchTail = batch[1];
+    if (batchHead === this.state.tail) {
+      // Received tail-end batch
+      this.state.inventory = this.state.inventory.concat(batch.slice(2));
+      this.setState({
+        queriedBelow: false,
+        tail: batchTail,
+      });
+    } else if (batchTail === this.state.head) {
+      // Received head-end batch
+      this.state.inventory = batch.slice(2).concat(this.state.inventory);
+      this.setState({
+        queriedBelow: false,
+        head: batchHead,
+      });
+    }
+  }
+
+  renderPosts() {
+    var posts = [];
+    for (var n = 0; n < this.state.inventory.length; n++) {
+      posts.push(<Post content={this.state.inventory[n]} />);
+    }
+    return <div className="post_container">{posts}</div>
   }
 
   render() {
     return (
       <div className="main">
         <div id="sidebar">
-          <Logo />
           <div className="sidebar_contents">
             <div className="heading">Explore</div>
           </div>
         </div>
-        <div id="central">
-          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+        <div id="central_biased">
+          <Hotbar full={true} location={0} callback={(state) => this.receiveHotbarState(state)} />
           <div className="central_contents">
-            <div className="post_container">
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-              <div className="post"></div>
-            </div>
+            {this.renderPosts()}
           </div>
         </div>
       </div>
+    );
+  }
+}
+
+
+function humanTimeSince(unixtime) {
+  let now = Math.floor(Date.now() / 1000);
+  if (unixtime <= 0) { return "the dawn of time" }
+  else if (now - unixtime < 0) { return "now"; }
+  else if (now - unixtime < 60) {
+    let seconds = now - unixtime;
+    if (seconds === 1) return "1 second ago";
+    else return seconds.toString() + " seconds ago";
+  } else if (now - unixtime < 3600) {
+    let minutes = Math.floor((now - unixtime) / 60);
+    if (minutes === 1) return "1 minute ago";
+    else return minutes.toString() + " minutes ago";
+  } else if (now - unixtime < 86400) {
+    let hours = Math.floor((now - unixtime) / 3600);
+    if (hours === 1) return "1 hour ago";
+    else return hours.toString() + " hours ago";
+  } else if (now - unixtime < 2592000) {
+    let days = Math.floor((now - unixtime) / 86400);
+    if (days === 1) return "1 day ago";
+    else return days.toString() + " days ago";
+  } else if (now - unixtime < 31536000) {
+    let months = Math.floor((now - unixtime) / 2592000);
+    if (months === 1) return "1 month ago";
+    else return months.toString() + " months ago";
+  } else {
+    let years = Math.floor((now - unixtime) / 31536000);
+    if (years === 1) return "1 year ago";
+    else return years.toString() + " years ago";
+  }
+}
+
+
+// GOTO POST
+function Post(props) {
+  if (props.content === undefined) {
+    return <div className="post_error">Failed to retrieve post preview. :(</div>;
+  }
+  var userinfo = '@' + props.content.username + ', ' + humanTimeSince(props.content.time);
+  var destination = POST_URL + props.content.id;
+  if (props.content.thumbnail === "") {
+    // Post with no thumbnail (text post)
+    return (
+      <div class="post_spacing">
+        <a href={destination}>
+          <div className="post">
+
+            <div className="post_lower_boundary">
+              <div className="post_title">{props.content.title}</div>
+              <div className="post_userinfo">{userinfo}</div>
+            </div>
+            <div className="post_inset">
+              {props.content.text}
+            </div>
+            <div className="post_stats_text">
+              <div className="post_stats_container">
+                (post statistics)
+              </div>
+            </div>
+
+          </div>
+        </a>
+      </div>
+    );
+  } else {
+    // Post with a thumbnail
+    return (
+      <a href={destination}>
+        <div className="post">
+          <div className="post_thumbnail_container">
+            <img src={IMG_URL + props.content.thumbnail} className="post_thumbnail" />
+          </div>
+          <div className="post_upper_boundary">
+            <div className="post_title">{props.content.title}</div>
+            <div className="post_userinfo">{userinfo}</div>
+          </div>
+          <div className="post_stats_image">
+            <div className="post_stats_container">
+              (post statistics)
+            </div>
+          </div>
+        </div>
+      </a>
     );
   }
 }
@@ -448,7 +685,7 @@ class Subscriptions extends React.Component {
             <div className="heading">Subscriptions</div>
           </div>
         </div>
-        <div id="central">
+        <div id="central_biased">
           <Hotbar callback={(state) => this.receiveHotbarState(state)} />
           <div className="central_contents">
 
@@ -474,7 +711,7 @@ class Chats extends React.Component {
             <div className="heading">Chats</div>
           </div>
         </div>
-        <div id="central">
+        <div id="central_biased">
           <Hotbar callback={(state) => this.receiveHotbarState(state)} />
           <div className="central_contents">
 
@@ -500,7 +737,7 @@ class Notifications extends React.Component {
             <div className="heading">Notifications</div>
           </div>
         </div>
-        <div id="central">
+        <div id="central_biased">
           <Hotbar callback={(state) => this.receiveHotbarState(state)} />
           <div className="central_contents">
 
@@ -512,10 +749,83 @@ class Notifications extends React.Component {
 }
 
 
-class Userpage extends React.Component {
+// GOTO FULLPOST
+class PostPage extends React.Component {
   constructor(props) {
     super(props);
-    let urlparts = window.location.href.split('/');
+    if (window.location.href.slice(-1) === '/') {
+      var cleanUrl = window.location.href.slice(0, -1);
+    } else var cleanUrl = window.location.href;
+    let urlparts = cleanUrl.split('/');
+    if ((urlparts.length === 5) && (urlparts[4] !== '')) {
+      this.state = {
+        postid: urlparts[4],
+        content: null,
+        receivedData: false,
+      }
+    } else {
+      window.location.href = ERROR_URL;
+    }
+  }
+
+  componentDidMount() {
+    let data = {
+      function: 'getPost',
+      id: this.state.postid,
+    }
+    fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(post => {
+      console.log(JSON.stringify(post));
+      this.setState({
+        content: post,
+        receivedData: true,
+      })
+    });
+  }
+
+  receiveHotbarState(state) {console.log("called back");}
+
+  renderPostContent() {
+    if (this.state.receivedData) {
+      return (
+        <div>
+          <div className="viewpost_title">{this.state.content.title}</div>
+          <div className="viewpost_text">{this.state.content.text}</div>
+        </div>
+      );
+    }
+  }
+
+  render () {
+    return (
+      <div className="main">
+        <div id="central">
+          <Hotbar full={true} callback={(state) => this.receiveHotbarState(state)} />
+          <div className="viewpost_contents">
+            <div className="viewpost_center">
+              {this.renderPostContent()}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+
+// GOTO USERPAGE
+class UserPage extends React.Component {
+  constructor(props) {
+    super(props);
+    if (window.location.href.slice(-1) === '/') {
+      var cleanUrl = window.location.href.slice(0, -1);
+    } else var cleanUrl = window.location.href;
+    let urlparts = cleanUrl.split('/');
     if ((urlparts.length === 5) && (urlparts[4] !== '')) {
       this.state = {
         username: urlparts[4],
@@ -527,7 +837,6 @@ class Userpage extends React.Component {
   }
   receiveHotbarState(state) {console.log("called back");}
   render () {
-
     return (
       <div className="main">
         <div id="sidebar">
@@ -536,8 +845,8 @@ class Userpage extends React.Component {
             <div className="heading">{this.state.username}</div>
           </div>
         </div>
-        <div id="central">
-          <Hotbar callback={(state) => this.receiveHotbarState(state)} />
+        <div id="central_biased">
+          <Hotbar full={true} location={2} callback={(state) => this.receiveHotbarState(state)} />
           <div className="central_contents">
 
           </div>
