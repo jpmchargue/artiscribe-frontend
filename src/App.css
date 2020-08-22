@@ -1,5 +1,6 @@
 #overlay-shadow {
   position: fixed;
+  z-index: 5;
   width: 100%;
   height: 100%;
   top: 0;
@@ -22,13 +23,61 @@
   color: rgb(0, 0, 0);
 }
 
+.formbox {
+  width: 450px;
+  height: auto;
+  margin: auto;
+  padding: 20px;
+  padding-bottom: 30px;
+  background: white;
+  border: 2px solid #adadc2;
+  border-radius: 8px;
+  box-shadow: 0px 0px 4px 1px black;
+  font-family: 'Poppins', sans-serif;
+}
+
+.formbox h1 {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 5px 0px;
+}
+
+.formbox_background {
+  display: flex;
+  height: 100vh;
+  background: #260062;
+  background: linear-gradient(135deg, rgba(29,0,153,1) 0%, rgba(38,0,98,1) 50%, rgba(75,0,93,1) 100%);
+}
+
+.formbox_label {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.formbox_label > input {
+  width: calc(100% - 8px);
+  height: 36px;
+  border: 2px solid #adadc2;
+  border-radius: 8px;
+}
+
+.formbox_submit {
+  padding: 5px 10px;
+  margin-top: 16px;
+  border-radius: 5px;
+  border: 2px solid #adadc2;
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
 #main {
 
 }
 
 #logo {
   display: inline-block;
-  padding: 1px 9px;
+  padding: 1px 8px;
 }
 
 #logo_link {
@@ -44,6 +93,7 @@
   z-index: 2;
   width: 248px;
   height: 100vh;
+  min-height: 450px;
   overflow-x: hidden;
   background: #fbfbfb;
   border-right: 1px solid #e3e3e3;
@@ -83,7 +133,7 @@
   font-family: 'Poppins', sans-serif;
   /*border-radius: 0 0 0 20px;*/
   /*box-shadow: 0 2px 8px 0 #808080;*/
-  box-shadow: 0 0 10px -6px black;
+  box-shadow: 0 -6px 10px 0 black;
 }
 
 #hb_wideSearchBarContainer,
@@ -91,16 +141,16 @@
   display: inline-block;
   position: relative;
   vertical-align: top;
-  margin: 10px 12px 9px 12px;
+  margin: 9px 12px 9px 12px;
   padding: 2px 36px 2px 18px;
   background: #fff;
-  border: 1px solid #cacaca;
+  border: 2px solid #adadc2;
   border-radius: 20px;
-  box-shadow: inset 0px 0px 3px 0px #555;
+  /*box-shadow: inset 0px 0px 3px 0px #555;*/
 }
 
 #hb_wideSearchBarContainer {
-  width: 40%;
+  width: calc(100% - 850px);
   min-width: 200px;
 }
 
@@ -122,7 +172,7 @@
 #search_icon {
   display: inline-block;
   vertical-align: middle;
-  padding: 0px 6px 3px 0px;
+  padding: 0px 6px 1px 0px;
 }
 
 #hb_navlinks {
@@ -134,8 +184,16 @@
 
 .navlink {
   display: inline-block;
-  margin: 6px 10px;
-  padding: 2px;
+  height: 30px;
+  margin: 3px 7px;
+  padding: 5px;
+  background: white;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.navlink:hover {
+  background: #eeeeee;
 }
 
 #hotbar_right {
@@ -150,7 +208,7 @@
   margin: 2px 12px 2px;
   padding: 2px 10px 2px;
   border: 2px solid #687c9a;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgb(133, 193, 217);
   font-size: 18px;
   font-weight: 600;
@@ -185,6 +243,7 @@
 
 #credits_text {
   color: #226622;
+  text-decoration: none;
 }
 
 #heart_text {
@@ -194,7 +253,15 @@
 
 #hb_balance {
   display: inline-block;
-  margin: 0px 22px 0px 15px;
+  margin: 0px 17px 0px 10px;
+  padding: 0px 5px;
+  background: white;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+#hb_balance:hover {
+  background: #cff9ce;
 }
 
 #hb_hearttime {
@@ -202,10 +269,22 @@
   margin: 0px 0px 0px 15px;
 }
 
+@media screen and (max-width: 1400px) {
+  #hb_hearttime {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  #hb_balance {
+    display: none !important;
+  }
+}
+
 #hb_userwidget {
   display: inline-block;
   min-width: 150px;
-  margin: 0px 15px;
+  margin: 3px 15px;
 }
 
 #user_icon {
@@ -214,6 +293,7 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
+  /*box-shadow: 0px 0px 0px 2.5px #adadc2;*/
 }
 
 #hb_username {
@@ -225,7 +305,23 @@
 }
 
 .sidebar_contents {
-  padding: 0px 15px;
+  padding: 60px 15px 15px 15px;
+}
+
+.sidebar_option {
+  display: block;
+  padding: 5px;
+  color: black;
+  font-size: 28px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sidebar_bottom {
+  position: absolute;
+  bottom: 0;
+  padding: 20px;
+  color: #adadc2;
 }
 
 .central_contents {
@@ -235,16 +331,17 @@
 
 .heading {
   display: block;
-  font-size: 32px;
+  padding: 5px;
+  font-size: 28px;
   font-weight: 700;
 }
 
 .post {
-  display: inline-block;
-  position: relative;
+  /*display: inline-block;*/
+  position: absolute;
   width: 360px;
-  height: 360px;
-  vertical-align: top;
+  height: auto;
+  /*vertical-align: top;*/
   background: rgb(255, 255, 255);
   border: 0px;
   border-radius: 5px;
@@ -255,7 +352,7 @@
 }
 
 .post:hover {
-  box-shadow: 0px 0px 1px 2px rgb(42, 42, 42);
+  box-shadow: 0px 0px 1px 2px #260062;
 }
 
 .post_contents {
@@ -339,7 +436,7 @@
 }
 
 .post_inset {
-  height: 360px;
+  /*height: 360px;*/
   padding: 10px 15px;
   background: #fafafa;
   box-shadow: 0px 0px 10px -5px #808080 inset;
@@ -351,6 +448,7 @@
 }
 
 .post_error {
+  height: 225px;
   font-size: 24px;
   font-weight: 500;
   margin: 6px 12px 2px 12px;
@@ -386,4 +484,8 @@
 .viewpost_title {
   font-size: 32px;
   font-weight: 600;
+}
+
+.posts_top {
+  border: 1px solid #adadc2;
 }

@@ -7,35 +7,35 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="100mm"
-   height="100mm"
-   viewBox="0 0 100 100"
-   version="1.1"
-   id="svg3887"
+   sodipodi:docname="dm_dim.svg"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="messages_dim.svg">
+   id="svg3887"
+   version="1.1"
+   viewBox="0 0 100 100"
+   height="100mm"
+   width="100mm">
   <defs
      id="defs3881" />
   <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="-28.151616"
-     inkscape:cy="202.36926"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     inkscape:document-rotation="0"
-     showgrid="false"
-     inkscape:object-paths="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1001"
+     inkscape:window-maximized="1"
+     inkscape:window-y="206"
      inkscape:window-x="-9"
-     inkscape:window-y="-9"
-     inkscape:window-maximized="1" />
+     inkscape:window-height="1046"
+     inkscape:window-width="2000"
+     inkscape:object-paths="true"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="202.36926"
+     inkscape:cx="-28.151616"
+     inkscape:zoom="1.4"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
   <metadata
      id="metadata3884">
     <rdf:RDF>
@@ -49,32 +49,32 @@
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Layer 1"
+     id="layer1"
      inkscape:groupmode="layer"
-     id="layer1">
+     inkscape:label="Layer 1">
     <path
-       sodipodi:nodetypes="sssscccsssss"
-       id="path4620"
-       style="fill:none;stroke:#adadc2;stroke-width:30.2362;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       transform="scale(0.26458333)"
        d="m 63.009766,37.585938 c -15.859605,0 -28.628907,12.769301 -28.628907,28.628906 V 228.24609 c 0,15.85961 12.769302,28.62696 28.628907,28.62696 h 70.311504 l -21.21289,97.6914 127.2793,-97.6914 h 75.55568 c 15.8596,0 28.62695,-12.76735 28.62695,-28.62696 V 66.214844 c 0,-15.859605 -12.76735,-28.628906 -28.62695,-28.628906 z"
-       transform="scale(0.26458333)" />
+       style="fill:#ffffff;stroke:#adadc2;stroke-width:30.2362;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+       id="path4620"
+       sodipodi:nodetypes="sssscccsssss" />
+    <circle
+       r="4"
+       cy="39.623428"
+       cx="30.25753"
+       id="path4624"
+       style="fill:#adadc2;fill-opacity:1;stroke:#adadc2;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <circle
        style="fill:#adadc2;fill-opacity:1;stroke:#adadc2;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4624"
-       cx="30.25753"
+       id="circle4626"
+       cx="50.537823"
        cy="39.623428"
        r="4" />
     <circle
        r="4"
        cy="39.623428"
-       cx="50.537823"
-       id="circle4626"
-       style="fill:#adadc2;fill-opacity:1;stroke:#adadc2;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <circle
-       style="fill:#adadc2;fill-opacity:1;stroke:#adadc2;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="circle4628"
        cx="70.818123"
-       cy="39.623428"
-       r="4" />
+       id="circle4628"
+       style="fill:#adadc2;fill-opacity:1;stroke:#adadc2;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>
