@@ -42,9 +42,10 @@ class Scroll extends Component {
     }
     this.requested = new Set();
     this.needHeight = new Set();
+    this.universalLimit = -1;
   }
   componentDidMount() {
-    setInterval(() => this.maintain(), 500);
+    setInterval(() => this.maintain(), 250);
   }
 
   /*
@@ -112,6 +113,7 @@ class Scroll extends Component {
     if (!(this.isLoaded(extremities[1])) && !(this.isRequested(extremities[1]))) {
       extremities[1] = this.indexAtY([window.scrollY + window.innerHeight + LOAD_UP_TO]);
     }
+    if (this.universalLimit !== -1) extremities[1] = Math.min(this.universalLimit, extremities[1]);
     console.log("Extremity Indices: " + extremities.toString());
     return extremities;
   }
@@ -159,47 +161,72 @@ class Scroll extends Component {
       window.scrollY + window.innerHeight + UNLOAD_AT
     ]);
     const inventoryCopy = this.state.inventory.slice();
-    var updateNeeded = false;
+    var invUpdateNeeded = false;
     for (var n = 0; n < inventoryCopy.length; n++) {
       if (inventoryCopy[n] !== null) {
         if ((n < unloadBoundaries[0]) || (n > unloadBoundaries[1])) {
           inventoryCopy[n] = null;
-          updateNeeded = true;
+          invUpdateNeeded = true;
         }
       }
     }
-    if (updateNeeded) this.setState({inventory: inventoryCopy});
+
+    // ENSURE HEIGHTS ACCURACY
+    var heightsCopy = this.state.heights.slice();
+    var heightUpdateNeeded = false;
+    for (var i = 0; i < this.state.inventory.length; i++) {
+      if (this.state.inventory[i]) {
+        let targetDiv = document.getElementById(i.toString());
+        if (targetDiv !== null) {
+          let height = targetDiv.clientHeight + 15;
+          if (height !== heightsCopy[i]) {
+            heightsCopy[i] = height;
+            heightUpdateNeeded = true;
+          }
+        }
+      }
+    }
+
+    if (invUpdateNeeded || heightUpdateNeeded) {
+      this.setState({
+        inventory: inventoryCopy,
+        heights: heightsCopy
+      });
+    }
   }
 
   receive(batch) {
     let batchHead = batch[0];
     let batchTail = batch[1];
-    console.log("VVV Receiving batch from " + batchHead.toString() + " to " + batchTail.toString());
-    console.log(batch);
+    console.log("Receiving batch from " + batchHead.toString() + " to " + batchTail.toString());
+    //console.log(batch);
     const inventoryCopy = this.state.inventory.slice();
     for (var b = batchHead; b < batchTail; b++) {
       if (this.isRequested(b)) {
-        inventoryCopy[b] = batch[2 + b - batchHead];
-        this.needHeight.add(b);
-        console.log("Flagged " + b.toString());
-        this.requested.delete(b);
+        if (batch[2 + b - batchHead] !== undefined) {
+          inventoryCopy[b] = batch[2 + b - batchHead];
+          this.needHeight.add(b);
+          this.requested.delete(b);
+        } else {
+          this.universalLimit = b;
+          break;
+        }
       }
     }
     this.setState({inventory: inventoryCopy});
   }
 
+
   componentDidUpdate() {
     // Record the heights of any blocks with indices in needHeight.
     // There's a more obscured way of doing this using isLoaded,
     // but this is way less complicated.
-    console.log(this.needHeight);
     if (this.needHeight.size > 0) {
       var heightsCopy = this.state.heights.slice();
       for (var i of this.needHeight) {
         let targetDiv = document.getElementById(i.toString());
         if (targetDiv !== null) {
           heightsCopy[i] = targetDiv.clientHeight + 15;
-          console.log("Recording height of block number " + i.toString());
         }
         this.needHeight.delete(i);
       }
@@ -207,20 +234,20 @@ class Scroll extends Component {
     }
   }
 
+
   renderHeader() {
     return this.props.header;
   }
 
   renderBlocks() {
-    let blocks = []
-    console.log(this.state.inventory);
-    console.log(this.state.heights);
+    let blocks = [];
     switch(this.props.type) {
       case 'post':
         var acc = this.props.y;
         for (var n = 0; n < this.state.inventory.length; n++) {
           if (this.state.inventory[n] !== null) {
             blocks.push(<PostBlock
+              globals={this.props.globals}
               content={this.state.inventory[n]}
               position={acc}
               isVisible={!(this.needHeight.has(n))}

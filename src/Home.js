@@ -51,7 +51,9 @@ class Home extends Component {
               Now with <i>randomly generated content</i> for a truly endless stream of unique entertainment!
             </div>
           </div>
+          <div className="background"></div>
           <Scroll
+            globals={this.props.globals}
             type="post"
             endpoint={{function: 'dummyPosts'}}
             first={3}

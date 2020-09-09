@@ -14,7 +14,7 @@ import credit_black_icon from './credit_black.svg';
 import credit_icon from './credit.svg';
 
 
-class PostBlock extends Component {
+class PostBlockSlim extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,15 +116,17 @@ class PostBlock extends Component {
     }
     var userinfo = '@' + this.props.content.username + ', ' + humanTimeSince(this.props.content.time);
 
-    var style = {};
-    if (this.props.position !== undefined) { style['top'] = this.props.position.toString() + "px"; }
-    if (this.props.isVisible) { style['opacity'] = '1'; }
-
     var userlink = (
-        <div className="post_userinfo">
+        <div className="post_userinfo" style={{textAlign: 'right'}}>
           <Link to={'/u/' + this.props.content.username} style={{textDecoration: 'none', color: '#888'}}>{userinfo}</Link>
         </div>
     );
+
+    var type_messages = [
+      "Text Post",
+      "Image Collection",
+      "Webcomic"
+    ];
 
     // Add logged-in check to determine if the login overlay should be thrown?
     if (this.props.globals.loggedIn) {
@@ -183,73 +185,26 @@ class PostBlock extends Component {
       );
     }
 
-    switch (this.props.content.type) {
-      case 0:
-        if (this.props.content.thumbnail === "") {
-          // Text post with no thumbnail
-          return (
-            <div className="textpost" style={style} id={this.props.blockID} onClick={this.redirect}>
-              {this.renderRedirect()}
-              <div className="post_lower_boundary">
-                <div className="post_title">{this.props.content.title} at {this.props.position}</div>
-                {userlink}
-              </div>
-              <div className="post_inset">
-                {this.props.content.text}
-              </div>
-              <div style={{textAlign:'center'}}>{stats}</div>
-            </div>
-          );
-        } else {
-          // Text post with a thumbnail
-          return (
-            <div className="textpost" style={style} id={this.props.blockID} onClick={this.redirect}>
-              {this.renderRedirect()}
-              <div className="post_lower_boundary">
-                <div className="post_title">{this.props.content.title}</div>
-                {userlink}
-              </div>
-              <div className="textpost_thumbnail_container">
-                <img src={constants.IMG_URL + this.props.content.thumbnail} className="textpost_thumbnail" />
-              </div>
-              <div style={{textAlign:'center'}}>{stats}</div>
-            </div>
-          );
+    return (
+      <div className="slimpost" onClick={this.redirect}>
+        {this.renderRedirect()}
+        {this.props.content.thumbnail !== ""
+        ? <div className="slimpost_thumbnail_container">
+            <img src={constants.IMG_URL + this.props.content.thumbnail} className="slimpost_thumbnail" />
+          </div>
+        : null
         }
-        break;
-      case 1:
-        // Image collection posts
-        return (
-          <div className="imagepost" style={style} id={this.props.blockID} onClick={this.redirect}>
-            {this.renderRedirect()}
-            <img src={constants.IMG_URL + this.props.content.thumbnail} className="imagepost_thumbnail" />
-            <div className="post_title">{this.props.content.title} at {this.props.position}</div>
-            {userlink}
-            <div style={{textAlign:'center'}}>{stats}</div>
-          </div>
-        );
-        break;
-      case 2:
-        // Webcomic posts
-        //var dummySubtitle = "Chapter 24: Ego's Review";
-        //var dummySynopsis = "In many ways, the work of a critic is easy. We risk very little, yet enjoy a position over those who offer up their work and their selves for our judgement. We thrive on negative criticism, which is fun to write and to read. But, the bitter truth we critics must face is that, in the grand scheme of things, the average piece of junk is probably more meaningful than our criticism designating it so.";
-        return (
-          <div className="comicpost" style={style} id={this.props.blockID} onClick={this.redirect}>
-            {this.renderRedirect()}
-            <div className="comicpost_thumbnail_container">
-              <img src={constants.IMG_URL + this.props.content.thumbnail} className="comicpost_thumbnail" />
-            </div>
-            <div className="comicpost_content">
-              <div className="post_title">{this.props.content.title} at {this.props.position}</div>
-              <div className="post_subtitle">{this.props.content.subtitle}</div>
-              {userlink}
-              <div className="post_synopsis">{this.props.content.synopsis}</div>
-              <div style={{textAlign:'left', padding: '0px 14px'}}>{stats}</div>
-            </div>
-          </div>
-        );
-      break;
-    }
+        <div className="slimpost_content_container">
+          <div className="post_title">{this.props.content.title}</div>
+          <div className="post_subtitle">{this.props.content.subtitle}</div>
+          <div className="post_type">{type_messages[this.props.content.type]}</div>
+        </div>
+        <div className="slimpost_content_container_right">
+          {userlink}
+          {stats}
+        </div>
+      </div>
+    );
   }
 }
 
@@ -285,4 +240,4 @@ function humanTimeSince(unixtime) {
 }
 
 
-export default PostBlock;
+export default PostBlockSlim;

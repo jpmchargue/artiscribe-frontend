@@ -128,6 +128,7 @@ class App extends Component {
     return (
       <Router>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;900&display=swap" rel="stylesheet" />
         {this.renderOverlay()}
         <Switch>
           // External pages
@@ -226,6 +227,17 @@ class App extends Component {
               <PostEditor globals={this.state.globals}/>
             </div>)}
           </Route>
+
+          {this.state.globals ?
+            <Route path={"/u/" + this.state.globals.name}>
+              {this.ifReady(<div>
+                <Hotbar globals={this.state.globals} location={2}/>
+                <UserPage globals={this.state.globals}/>
+              </div>)}
+            </Route>
+          : undefined
+          }
+
           <Route path="/u/*">
             {this.ifReady(<div>
               <Hotbar globals={this.state.globals} location={-1}/>
