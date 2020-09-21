@@ -15,15 +15,13 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    let data = {
-      function: 'getPosts',
-      index: 0,
-      number: 3,
-    }
+    let data = new FormData();
+    data.append('function', 'getPosts');
+    data.append('index', 0);
+    data.append('number', 3);
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.json())
     .then(posts => {

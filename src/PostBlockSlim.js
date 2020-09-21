@@ -117,8 +117,8 @@ class PostBlockSlim extends Component {
     var userinfo = '@' + this.props.content.username + ', ' + humanTimeSince(this.props.content.time);
 
     var userlink = (
-        <div className="post_userinfo" style={{textAlign: 'right'}}>
-          <Link to={'/u/' + this.props.content.username} style={{textDecoration: 'none', color: '#888'}}>{userinfo}</Link>
+        <div className="slimpost_userinfo">
+          <span to={'/u/' + this.props.content.username} style={{textDecoration: 'none', color: '#888'}}>{userinfo}</span>
         </div>
     );
 
@@ -131,7 +131,7 @@ class PostBlockSlim extends Component {
     // Add logged-in check to determine if the login overlay should be thrown?
     if (this.props.globals.loggedIn) {
       var stats = (
-        <div className="post_stats">
+        <div className="slimpost_stats">
           <div className="post_stats_container">
             <div className="post_interaction" onClick={this.handleLike}>
               <img src={this.state.isLiked ? thumbsup_icon : thumbsup_gray_icon} height="24" />
@@ -145,20 +145,12 @@ class PostBlockSlim extends Component {
               <img src={this.state.isHearted ? useheart_icon : useheart_gray_icon} height="24" />
               <div className={this.state.isHearted ? "post_stats_text_red" : "post_stats_text"}>{this.props.content.numHearts}</div>
             </div>
-            <div className="post_interaction_shine" onClick={this.handleShine}>
-              <img src={shine_black_icon} height="24" />
-              <div className="post_stats_text">{this.props.content.numShines}</div>
-            </div>
-            <div className="post_interaction_tip" onClick={this.handleTip}>
-              <img src={credit_black_icon} height="24" />
-              <div className="post_stats_text">{this.props.content.amtTipped}</div>
-            </div>
           </div>
         </div>
       );
     } else {
       var stats = (
-        <div className="post_stats">
+        <div className="slimpost_stats">
           <div className="post_stats_container">
             <div className="post_interaction" onClick={this.loginOverlay}>
               <img src={thumbsup_gray_icon} height="24" />
@@ -171,14 +163,6 @@ class PostBlockSlim extends Component {
             <div className="post_interaction" onClick={this.loginOverlay}>
               <img src={useheart_gray_icon} height="24" />
               <div className="post_stats_text">{this.props.content.numHearts}</div>
-            </div>
-            <div className="post_interaction_shine" onClick={this.loginOverlay}>
-              <img src={shine_black_icon} height="24" />
-              <div className="post_stats_text">{this.props.content.numShines}</div>
-            </div>
-            <div className="post_interaction_tip" onClick={this.loginOverlay}>
-              <img src={credit_black_icon} height="24" />
-              <div className="post_stats_text">{this.props.content.amtTipped}</div>
             </div>
           </div>
         </div>
@@ -195,14 +179,11 @@ class PostBlockSlim extends Component {
         : null
         }
         <div className="slimpost_content_container">
-          <div className="post_title">{this.props.content.title}</div>
-          <div className="post_subtitle">{this.props.content.subtitle}</div>
-          <div className="post_type">{type_messages[this.props.content.type]}</div>
-        </div>
-        <div className="slimpost_content_container_right">
+          <div className="slimpost_title">{this.props.content.title}</div>
+          <div className="slimpost_subtitle">{this.props.content.subtitle}</div>
           {userlink}
-          {stats}
         </div>
+        {stats}
       </div>
     );
   }

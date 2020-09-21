@@ -9,7 +9,6 @@ class Map extends Component {
     return (
       <div style={{display: 'flex', height: '100vh'}}>
         <div style={{margin: 'auto', textAlign: 'center'}}>
-        <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&display=swap" rel="stylesheet"/>
           <div style={{fontFamily: 'Patrick Hand SC, cursive', fontSize: '60px'}}>
             artiscribe map
           </div>

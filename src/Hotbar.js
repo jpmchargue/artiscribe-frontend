@@ -29,7 +29,7 @@ class Hotbar extends Component {
     }
   }
   componentDidMount() {
-    setInterval(() => this.setState({time: Math.floor(Date.now() / 1000)}), 1000)
+    setInterval(() => this.setState({time: Math.floor(Date.now() / 1000)}), 1000);
   }
   componentWillUnmount() {
     clearInterval(this.interval);

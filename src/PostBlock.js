@@ -25,7 +25,7 @@ class PostBlock extends Component {
       isTipped: false,
       redirect: false,
     }
-    this.destination = '/post/' + props.content.id;
+    if (this.props.content) this.destination = '/post/' + props.content.id;
   }
 
   handleLike = (event) => {

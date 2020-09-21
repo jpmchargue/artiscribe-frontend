@@ -14,14 +14,12 @@ class PostPage extends Component {
   }
 
   componentDidMount() {
-    let data = {
-      function: 'getPost',
-      id: this.state.postid,
-    };
+    let data = new FormData();
+      data.append('function', 'getPost');
+      data.append('id', this.state.postid);
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.json())
     .then(received => {

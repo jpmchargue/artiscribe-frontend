@@ -140,14 +140,17 @@ class Scroll extends Component {
       }
       var requestMin = Math.min.apply(null, requestSet);
       var requestMax = Math.max.apply(null, requestSet);
-      let data = this.props.endpoint;
-      data['index'] = requestMin;
-      data['number'] = Math.min(MAX_BLOCKS_PER_QUERY, requestMax - requestMin + 1);
-      console.log("requesting range with index " + data['index'].toString() + " and number " + data['number'].toString());
+      let data = new FormData();
+      for (const attr in this.props.endpoint) {
+        data.append(attr, this.props.endpoint[attr]);
+      }
+      var numToRequest = Math.min(MAX_BLOCKS_PER_QUERY, requestMax - requestMin + 1);
+      data.append('index', requestMin);
+      data.append('number', numToRequest);
+      console.log("requesting range with index " + requestMin.toString() + " and number " + numToRequest.toString());
       fetch(constants.API_URL, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data),
+        body: data,
       })
       .then(response => response.json())
       .then(blocks => {
@@ -196,9 +199,8 @@ class Scroll extends Component {
   }
 
   receive(batch) {
-    let batchHead = batch[0];
-    let batchTail = batch[1];
-    console.log("Receiving batch from " + batchHead.toString() + " to " + batchTail.toString());
+    let batchHead = parseInt(batch[0]);
+    let batchTail = parseInt(batch[1]);
     //console.log(batch);
     const inventoryCopy = this.state.inventory.slice();
     for (var b = batchHead; b < batchTail; b++) {

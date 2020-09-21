@@ -67,7 +67,6 @@ html {
 
 .formbox_submit {
   padding: 5px 10px;
-  margin-top: 16px;
   border-radius: 5px;
   border: 2px solid #adadc2;
   font-family: 'Poppins', sans-serif;
@@ -90,6 +89,16 @@ html {
 
 #logo_container {
   display: inline-block;
+  padding-right: 180px;
+}
+
+#logo_text {
+  position: absolute;
+  top: -15px;
+  left: 48px;
+  font-family: "Patrick Hand SC";
+  font-size: 52px;
+  color: #260062;
 }
 
 #sidebar {
@@ -156,6 +165,7 @@ html {
 #hb_wideSearchBarContainer {
   width: calc(100% - 850px);
   min-width: 200px;
+  max-width: 750px;
 }
 
 #hb_thinSearchBarContainer {
@@ -647,15 +657,26 @@ html {
 .page_narrow_wrapper {
   width: 80%;
   height: auto;
-  margin-top: 50px;
+  margin-top: 55px;
   margin-left: auto;
   margin-right: auto;
 }
 
+.userpage_background {
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
 .userpage_block {
   position: relative;
+  min-width: 900px;
   min-height: 200px;
   margin-top: 150px;
+  margin-bottom: 100px;
   background: white;
   border: 2px solid #adadc2;
   border-radius: 10px;
@@ -721,7 +742,8 @@ html {
   text-align: center;
 }
 
-.userpage_action {
+.userpage_action,
+.userpage_action_active {
   display: inline-block;
   width: 300px;
   margin: 5px 20px;
@@ -729,12 +751,25 @@ html {
   font-size: 20px;
   font-weight: 600;
   border-radius: 8px;
-  background: #eaeaea;
   transition: background 0.1s;
+}
+
+.userpage_action {
+  color: black;
+  background: #eaeaea;
+}
+
+.userpage_action_active {
+  color: white;
+  background: #260062;
 }
 
 .userpage_action:hover {
   background: #dadada;
+}
+
+.userpage_action_active:hover {
+  background: #491d8f;
 }
 
 .userpage_tab_wrap {
@@ -762,15 +797,26 @@ html {
 
 }
 
+.userpage_issue {
+  margin: 50px;
+  font-size: 18px;
+  text-align: center;
+}
+
 .userpage_list {
   margin: 10px 25px;
+  text-align: center;
 }
 
 .slimpost {
-  height: 120px;
-  margin: 1px;
+  display: inline-block;
+  position: relative;
+  width: 200px;
+  height: 250px;
+  vertical-align: top;
+  margin: 5px;
   background: white;
-  box-shadow: 0px 0px 0px 1px #eeeeee;
+  box-shadow: 0px 0px 0px 1px #bebebe;
   transition: background 0.1s
 }
 
@@ -779,18 +825,24 @@ html {
 }
 
 .slimpost_thumbnail_container {
-  float: left;
-  max-width: 200px;
-  overflow-x: hidden;
+  width: 100%;
+  height: 125px;
+  overflow-y: hidden;
 }
 
 .slimpost_thumbnail {
-  float: left;
-  height: 120px;
+  width: 100%;
 }
 
 .slimpost_content_container {
-  display: inline-block;
+  margin: 0px 10px;
+}
+
+.slimpost_title {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  margin-top: 5px;
 }
 
 .post_type {
@@ -801,8 +853,113 @@ html {
   text-align: left;
 }
 
+.slimpost_subtitle {
+  font-size: 13px;
+  text-align: left;
+}
+
+.slimpost_userinfo {
+  padding-top: 3px;
+  text-align: left;
+  font-size: 12px;
+  color: #888;
+}
+
 .slimpost_content_container_right {
+  padding: 0px 10px;
+}
+
+.slimpost_stats {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  border-top: 1px solid #e3e3e3;
+}
+
+
+.edittool {
+  display: inline-block;
+  width: 180px;
+  height: 180px;
+  margin: 8px;
   padding: 10px;
-  float: right;
-  text-align: right;
+  vertical-align: top;
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
+  background: #3048ef;
+  border-radius: 4px;
+  box-shadow: 0px 0px 0px 2px #000088;
+  transition: box-shadow 0.1s;
+}
+
+.edittool:hover {
+  box-shadow: 0px 0px 0px 3px #260062;
+}
+
+.edittool_container,
+.editform {
+  margin: 10px 0px;
+  padding: 15px 0px;
+  background: white;
+  border: 2px solid #adadc2;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px -6px black;
+}
+
+.edittool_container {
+  min-width: 900px;
+  text-align: center;
+}
+
+.editform {
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 7px 0px;
+}
+
+.editform_label {
+  padding: 5px 0px;
+}
+
+.editform_input {
+  width: calc(100% - 8px);
+  height: 36px;
+  resize: none;
+  font-family: "Arial";
+  border: 2px solid #adadc2;
+  border-radius: 8px;
+}
+
+.editform_section {
+  padding: 7px 20px;
+  border-bottom: 1px solid #adadc2;
+}
+
+.colorpicker {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  vertical-align: middle;
+  border: 2px solid #adadc2;
+  border-radius: 8px;
+}
+
+.editform_action {
+  width: 100px;
+  margin: 5px 0px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 8px;
+  color: black;
+  background: #eaeaea;
+  transition: background 0.1s;
+}
+
+.editform_action:hover {
+  background: #dadada;
 }

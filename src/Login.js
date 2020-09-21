@@ -20,15 +20,13 @@ class Login extends Component {
   handlePasswordChange(event) { this.setState({password: event.target.value}); }
   handleSubmit(event) {
     event.preventDefault();
-    let data = {
-      function: 'login',
-      username: this.state.username,
-      password: this.state.password,
-    };
+    let data = new FormData();
+      data.append('function', 'login');
+      data.append('username', this.state.username);
+      data.append('password', this.state.password);
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.text())
     .then(text => {
@@ -61,7 +59,7 @@ class Login extends Component {
             </div>
             <div className="formbox_label">
               Password:<br />
-              <input type="text" value={this.state.password} onChange={this.handlePasswordChange} />
+              <input type="password" value={this.state.password} onChange={this.handlePasswordChange} />
             </div>
             <input className="formbox_submit" type="submit" value="Submit" />
           </form>

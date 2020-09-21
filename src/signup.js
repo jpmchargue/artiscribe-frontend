@@ -21,6 +21,7 @@ class Signup extends Component {
       passwordsMatch: true,
       token: '',
     };
+    this.usernameRegex = /\W/;
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handleUsernameChange = this.handleUsernameChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
@@ -35,14 +36,12 @@ class Signup extends Component {
 
   handleEmailChange(event) {
     this.setState({email: event.target.value});
-    let data = {
-      function: 'isEmailUnique',
-      email: event.target.value,
-    }
+    let data = new FormData();
+      data.append('function', 'isEmailUnique');
+      data.append('email', event.target.value);
     fetch(constants.API_URL, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data),
+        body: data,
     })
     .then(response => response.text())
     .then((text) => {
@@ -126,6 +125,27 @@ class Signup extends Component {
     if (!unneeded) return <div style={{color: '#f00'}}>{message}</div>;
   }
 
+  usernameCharsValid() {
+    return !(this.usernameRegex.test(this.state.username));
+  }
+
+  passwordLengthValid() {
+    return (this.state.password.length >= 8);
+  }
+
+  renderRequirements() {
+    return (
+      <ul>
+        <li style={this.usernameCharsValid() ? {color: "#00bb00"} : {color: "#ff3333"}}>
+          Usernames must only contain letters, numbers, and underscores.
+        </li>
+        <li style={this.passwordLengthValid() ? {color: "#00bb00"} : {color: "#ff3333"}}>
+          Passwords must be at least 8 characters long.
+        </li>
+      </ul>
+    );
+  }
+
   renderError() {
     if (this.state.errorId === 1) { // Missing required field
       return (
@@ -151,7 +171,14 @@ class Signup extends Component {
   }
 
   renderSubmitButton() {
-    if ((this.state.email.length > 0) && (this.state.username.length > 0) && (this.state.password.length > 0) && (this.state.confirmation.length > 0)) {
+    if (
+      (this.state.email.length > 0) &&
+      (this.state.username.length > 0) &&
+      (this.state.password.length > 0) &&
+      (this.state.confirmation.length > 0) &&
+      this.usernameCharsValid() &&
+      this.passwordLengthValid()
+    ) {
       if (this.state.emailIsUnique && this.state.usernameIsUnique && this.state.passwordsMatch) {
         return (<input className="formbox_submit" type="submit" value="Create Account" />);
       }
@@ -168,7 +195,7 @@ class Signup extends Component {
           verifyCallback={this.verifyCallback}
         />
         <div className="formbox_background">
-          <div className="formbox" style={{width: "550px"}}>
+          <div className="formbox" style={{width: "600px"}}>
             <h1>Create an account</h1>
             {this.renderError()}
             <form onSubmit={this.handleSubmit}>
@@ -191,6 +218,7 @@ class Signup extends Component {
                 <input type="text" id="txtConfirmation" value={this.state.confirmation} onChange={this.handleConfirmationChange} />
               </div>
               {this.renderWarning(this.state.passwordsMatch, "The two passwords provided do not match.")}
+              {this.renderRequirements()}
               {this.renderSubmitButton()}
             </form>
           </div>

@@ -9,6 +9,9 @@ const Logo = () => {
     <div id="logo_container">
       <Link to="" title="Artiscribe Home" id="logo_link">
         <img src={inkwell} id="logo" height="48"/>
+        <div id="logo_text">
+          artiscribe
+        </div>
       </Link>
     </div>
   );

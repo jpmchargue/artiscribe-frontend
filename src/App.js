@@ -48,17 +48,15 @@ class App extends Component {
   }
 
   componentDidMount() {
-    let data = {
-      function: 'globals',
-    }
+    let data = new FormData();
+    data.append('function', 'globals');
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.json())
     .then(globals => {
-      var FAKE_LOGIN = true;
+      var FAKE_LOGIN = false;
       var consts = {
         showLoginOverlay: () => this.loginOverlay(),
       }
@@ -67,7 +65,7 @@ class App extends Component {
       if (!globals) {
         if (FAKE_LOGIN) {
           acc = {
-            name: 'tester',
+            name: 'jp',
             icon: 'placeholder.png',
             color: '00ff00',
             birthday: 1596249536,
@@ -127,6 +125,7 @@ class App extends Component {
   render() {
     return (
       <Router>
+        <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&display=swap" rel="stylesheet"/>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;900&display=swap" rel="stylesheet" />
         {this.renderOverlay()}

@@ -12,11 +12,19 @@ class UserPage extends Component {
     this.state = {
       tab: 0,
       user: null,
+      subscribed: false,
       posts: null,
       postsPage: 0,
       series: null,
       seriesPage: 0,
       about: null,
+      editing: false,
+      editAlias: "",
+      editColor: "",
+      editColorValid: false,
+      editBio: "",
+      editIconExists: false,
+      editBackgroundExists: false,
     };
     this.username = window.location.href.split('/').slice(-1)[0];
     // The received values indicate whether the loaded information is the desired information.
@@ -28,11 +36,18 @@ class UserPage extends Component {
     this.queriedPosts = false;
     this.queriedSeries = false;
     this.queriedAbout = false;
+
+    this.handleAliasChange = this.handleAliasChange.bind(this);
+    this.handleColorChange = this.handleColorChange.bind(this);
+    this.handleBioChange = this.handleBioChange.bind(this);
+
+    this.hexRegex = /[^0-9a-fA-F]/;
   }
 
   componentDidMount() {
     this.queryUserInfo(this.username);
     this.queryPosts(this.username, 0); this.queriedPosts = true;
+    setInterval(() => this.checkFileUploads(), 100)
   }
 
   componentDidUpdate() {
@@ -44,33 +59,37 @@ class UserPage extends Component {
   }
 
   queryUserInfo(name) {
-    let data = {
-      function: 'describeUser',
-      username: name
-    }
+    let data = new FormData();
+      data.append('function', 'userpage');
+      data.append('username', name);
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.json())
     .then(info => {
-      this.setState({ user: info });
+      var userobj = info[0];
+      this.setState({
+        user: userobj,
+        subscribed: info[1],
+        editAlias: userobj.alias,
+        editColor: userobj.color,
+        editColorValid: !(this.hexRegex.test(userobj.color)),
+        editBio: userobj.bio,
+      });
       this.receivedUser = true;
     });
   }
 
   queryPosts(name, page) {
-    let data = {
-      function: 'getPosts',
-      username: name,
-      number: 10,
-      index: page * 10
-    }
+    let data = new FormData();
+      data.append('function', 'getPosts');
+      data.append('username', name);
+      data.append('number', 10);
+      data.append('index', page * 10);
     fetch(constants.API_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data),
+      body: data,
     })
     .then(response => response.json())
     .then(postdata => {
@@ -100,6 +119,14 @@ class UserPage extends Component {
     return month.toString() + '/' + day.toString() + '/' + year.toString();
   }
 
+  renderBackground() {
+    if (this.receivedUser) {
+      if (this.state.user.background.length > 0) {
+        return <img className="userpage_background" src={constants.IMG_URL + this.state.user.background} />
+      }
+    }
+  }
+
   renderContents() {
     if (!this.receivedUser) {
       return ( <div className="page_narrow_wrapper">
@@ -114,6 +141,7 @@ class UserPage extends Component {
         if (this.state.user.name === this.props.globals.name) {
           return ( <div className="page_narrow_wrapper">
               {this.renderTools()}
+              {this.renderEditor()}
               {this.renderUser(true)}
           </div> );
         } else {
@@ -122,6 +150,20 @@ class UserPage extends Component {
           </div> );
         }
       }
+    }
+  }
+
+  renderSubButtons(isme) {
+    if (!isme) {
+      return (
+        <div className="userpage_action_wrap">
+          {this.state.subscribed
+            ? <div className="userpage_action_active" onClick={() => this.unsubscribe()}>Unsubscribe</div>
+            : <div className="userpage_action" onClick={() => this.subscribe()}>Subscribe</div>
+          }
+          <div className="userpage_action">Support</div>
+        </div>
+      );
     }
   }
 
@@ -144,9 +186,9 @@ class UserPage extends Component {
     this.setState({ tab: value });
     // if the content object for the tab is null, query it
     var states = [
-      this.state.receivedPosts,
-      this.state.receivedSeries,
-      this.state.receivedAbout
+      this.receivedPosts,
+      this.receivedSeries,
+      this.receivedAbout
     ];
     var queried = [
       this.queriedPosts,
@@ -175,7 +217,7 @@ class UserPage extends Component {
     };
     return (
       <div className="userpage_block">
-        <div className="userpage_alias">{this.state.user.alias}</div>
+        <div className="userpage_alias" style={{color: "#" + this.state.user.color}}>{this.state.user.alias}</div>
         <img className="userpage_icon" src={iconUrl} />
         <div className="userpage_username">@{this.state.user.name}</div>
         <div className="userpage_info_wrap">
@@ -186,10 +228,7 @@ class UserPage extends Component {
           <div className="userpage_info">{this.state.user.numHearts} hearts</div>
         </div>
         <div className="userpage_bio">{this.state.user.bio}</div>
-        {isme ? null : <div className="userpage_action_wrap">
-          <div className="userpage_action">Subscribe</div>
-          <div className="userpage_action">Support</div>
-        </div>}
+        {this.renderSubButtons(isme)}
         <div className="userpage_tab_wrap">
           <div className="userpage_tab" style={this.state.tab === 0 ? activeTabStyle : null} onClick={() => this.goToTab(0)}>Posts</div>
           <div className="userpage_tab" style={this.state.tab === 1 ? activeTabStyle : null} onClick={() => this.goToTab(1)}>Series</div>
@@ -202,38 +241,37 @@ class UserPage extends Component {
     );
   }
 
-  renderTools() {
-    return <div>Tools</div>;
-  }
-
   renderTab(tab) {
     switch (tab) {
       case 0:
         return this.renderPosts();
-        break;
       case 1:
         return this.renderSeries();
-        break;
       case 2:
         return this.renderAbout();
-        break;
     }
   }
 
   renderPosts() {
-    if (this.state.posts) {
-      var blocks = [];
-      for (var i = 2; i < this.state.posts.length; i++) {
-        blocks.push(
-          <PostBlockSlim
-            globals={this.props.globals}
-            content={this.state.posts[i]}
-            key={i}
-          />
+    if (this.state.posts){
+      if (this.state.posts.length > 2) {
+        var blocks = [];
+        for (var i = 2; i < this.state.posts.length; i++) {
+          blocks.push(
+            <PostBlockSlim
+              globals={this.props.globals}
+              content={this.state.posts[i]}
+              key={i}
+            />
+          );
+        }
+        return <div className="userpage_list">{blocks}</div>;
+      } else {
+        console.log("No posts found");
+        return (
+          <div className="userpage_issue">{this.state.user.alias} hasn't made any posts.</div>
         );
-        console.log(i);
       }
-      return <div className="userpage_list">{blocks}</div>;
     }
   }
 
@@ -245,9 +283,240 @@ class UserPage extends Component {
     return <div>About</div>;
   }
 
+  renderTools() {
+    return (
+      <div className="edittool_container">
+        <div className="edittool" onClick={() => {this.setState({editing: !this.state.editing})}}>Edit Your Page</div>
+        <div className="edittool">Create Blog Entry</div>
+        <div className="edittool">Create Image Collection</div>
+        <div className="edittool">Create Webcomic Issue</div>
+        <div className="edittool">Establish a Series</div>
+      </div>
+    );
+  }
+
+  subscribe() {
+    let data = new FormData();
+      data.append('function', 'subToUser');
+      data.append('creator',  this.state.user.name);
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data,
+    })
+    .then(response => response.json())
+    .then(bool => {
+        if (bool === 1) {
+          this.setState({ subscribed: true });
+        }
+    });
+  }
+
+  unsubscribe() {
+    let data = new FormData();
+      data.append('function', 'unsubToUser');
+      data.append('creator', this.state.user.name);
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data,
+    })
+    .then(response => response.json())
+    .then(bool => {
+        if (bool === 1) {
+          this.setState({ subscribed: false });
+        }
+    });
+  }
+
+  handleAliasChange(event) {
+    this.setState({
+      editAlias: event.target.value,
+    });
+  }
+
+  handleColorChange(event) {
+    this.setState({
+      editColor: event.target.value,
+      editColorValid: !(this.hexRegex.test(event.target.value)) && (event.target.value.length % 3 == 0),
+    });
+    console.log(event.target.value);
+    console.log(!(this.hexRegex.test(event.target.value)));
+  }
+
+  handleBioChange(event) {
+    this.setState({
+      editBio: event.target.value,
+    });
+  }
+
+  checkFileUploads() {
+    var iconFileExists = (
+      (document.getElementById('fileIcon')) &&
+      (document.getElementById('fileIcon').files.length > 0)
+    );
+    if (iconFileExists !== this.state.editIconExists) {
+      this.setState({ editIconExists: iconFileExists });
+    }
+    var bgFileExists = (
+      (document.getElementById('fileBackground')) &&
+      (document.getElementById('fileBackground').files.length > 0)
+    );
+    if (bgFileExists !== this.state.editBackgroundExists) {
+      this.setState({ editBackgroundExists: bgFileExists });
+    }
+  }
+
+  updateAlias() {
+    let data = new FormData();
+      data.append('function', 'newUserAlias');
+      data.append('alias', this.state.editAlias);
+      data.append('color', this.state.editColor);
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data
+    })
+    .then(response => response.json())
+    .then(bool => {
+        if (bool === 1) {
+          let newUser = {...this.state.user}
+          newUser.alias = this.state.editAlias;
+          newUser.color = this.state.editColor;
+          this.setState({ user: newUser });
+        }
+    });
+  }
+
+  updateBio() {
+    let data = new FormData();
+      data.append('function', 'newUserBio');
+      data.append('bio', this.state.editBio);
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data,
+    })
+    .then(response => response.json())
+    .then(bool => {
+        if (bool === 1) {
+          let newUser = {...this.state.user}
+          newUser.bio = this.state.editBio;
+          this.setState({ user: newUser });
+        }
+    });
+  }
+
+  updateIcon() {
+    let data = new FormData();
+      data.append("function", "newUserIcon");
+      data.append("upload", document.getElementById('fileIcon').files[0]);
+    //let data = {
+    //  function: "newUserIcon",
+    //  upload: document.getElementById('fileIcon').files[0]
+    //};
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data
+    })
+    .then(response => response.text())
+    .then(txt => {
+      if (txt.charAt(0) !== '[') {
+        let newUser = {...this.state.user}
+        newUser.icon = txt;
+        this.setState({ user: newUser });
+      }
+    });
+  }
+
+  updateBackground() {
+    let data = new FormData();
+      data.append("function", "newUserBackground");
+      data.append("upload", document.getElementById('fileBackground').files[0]);
+    fetch(constants.API_URL, {
+      method: 'POST',
+      body: data
+    })
+    .then(response => response.text())
+    .then(txt => {
+      if (txt.charAt(0) !== '[') {
+        let newUser = {...this.state.user}
+        newUser.background = txt;
+        this.setState({ user: newUser });
+      }
+    });
+  }
+
+  renderUpdateButton(condition, text, onclick) {
+    if (condition) {
+      return (<div className="editform_action" onClick={onclick}>{text}</div>);
+    }
+   }
+
+  renderEditor() {
+    if (this.state.editing) {
+      return (
+        <div syle={{display: "flex"}}>
+          <div className="editform">
+
+            <div className="editform_section">
+              <div className="editform_label">
+                Alias:
+                <input
+                  className="editform_input" type="text" id="txtAlias"
+                  value={this.state.editAlias}
+                  onChange={this.handleAliasChange}
+                />
+              </div>
+              <div className="editform_label">
+                Alias Color:
+                <input
+                  className="editform_input" style={{maxWidth: "200px", margin: "0px 10px"}} type="text" id="txtColor"
+                  value={this.state.editColor}
+                  onChange={this.handleColorChange}
+                />
+                <div className="colorpicker" style={{background: "#" + this.state.editColor}}/>
+                {this.state.editColorValid ? null : <div style={{color: "#f00"}}>Please enter a valid hex color code.</div>}
+              </div>
+              {this.renderUpdateButton(this.state.editColorValid, "Update", () => this.updateAlias())}
+            </div>
+
+            <div className="editform_section">
+              <div className="editform_label">
+                Bio:
+                <textarea
+                  className="editform_input" style={{height: '72px'}} type="text" id="txtBio"
+                  value={this.state.editBio}
+                  onChange={this.handleBioChange}
+                />
+              </div>
+              {(this.state.editBio.length <= 256)
+                ? <div>{this.state.editBio.length}/256</div>
+                : <div style={{color: "#f00"}}>{this.state.editBio.length}/256</div>
+              }
+              {this.renderUpdateButton((this.state.editBio.length <= 256), "Update", () => this.updateBio())}
+            </div>
+
+            <div className="editform_section">
+              <div className="editform_label">
+                Icon Image: <input type="file" id="fileIcon" />
+              </div>
+              {this.renderUpdateButton(this.state.editIconExists, "Update", () => this.updateIcon())}
+            </div>
+
+            <div className="editform_section" style={{borderBottom: "0px"}}>
+              <div className="editform_label">
+                Background Image: <input type="file" id="fileBackground" value={this.state.email} />
+              </div>
+              {this.renderUpdateButton(this.state.editBackgroundExists, "Update", () => this.updateBackground())}
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+  }
+
   render() {
     return (
       <div style={{display: 'flex'}}>
+        {this.renderBackground()}
         {this.renderContents()}
       </div>
     );
